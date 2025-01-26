@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EthioSubCash</title>
+    <style>
+        /* PAWS-Inspired Color Scheme */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background-color: #f9f5e3; /* Light beige background */
+            color: #4a4a4a; /* Dark gray text */
+        }
+        h1 {
+            color: #ff6f61; /* Coral accent color */
+        }
+        .reward {
+            font-size: 24px;
+            margin: 20px 0;
+            color: #4a4a4a;
+        }
+        .reward span {
+            color: #ff6f61; /* Coral accent color */
+            font-weight: bold;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            background-color: #ff6f61; /* Coral accent color */
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #e65a50; /* Darker coral on hover */
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to EthioSubCash!</h1>
+    <p>Connect your YouTube channel and start earning rewards.</p>
+    <div class="reward">Your current rewards: <span id="rewardAmount">0</span> ETB</div>
+    <button id="claimButton">Claim Rewards</button>
+
+    <script>
+        // Initialize Telegram Web App API
+        const tg = window.Telegram.WebApp;
+
+        // Expand the Mini App to full screen
+        tg.expand();
+
+        // Access user data
+        const user = tg.initDataUnsafe.user;
+        if (user) {
+            document.body.innerHTML += `<p>Hello, ${user.first_name}!</p>`;
+        }
+
+        // Reward system
+        let rewards = 0; // Start with 0 rewards
+        const rewardAmount = document.getElementById('rewardAmount');
+        const claimButton = document.getElementById('claimButton');
+
+        // Handle claim button click
+        claimButton.addEventListener('click', () => {
+            rewards += 10; // Add 10 ETB as a reward
+            rewardAmount.textContent = rewards; // Update the reward display
+            tg.showAlert(`You claimed 10 ETB! Total rewards: ${rewards} ETB.`);
+        });
+    </script>
+</body>
+</html>
