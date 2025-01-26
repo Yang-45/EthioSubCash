@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EthioSubCash</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        h1 {
+            color: #007bff;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to EthioSubCash!</h1>
+    <p>Connect your YouTube channel and start earning rewards.</p>
+    <button id="mainButton">Get Started</button>
+
+    <script>
+        // Initialize Telegram Web App API
+        const tg = window.Telegram.WebApp;
+
+        // Expand the Mini App to full screen
+        tg.expand();
+
+        // Access user data
+        const user = tg.initDataUnsafe.user;
+        if (user) {
+            document.body.innerHTML += `<p>Hello, ${user.first_name}!</p>`;
+        }
+
+        // Handle button click
+        const button = document.getElementById('mainButton');
+        button.addEventListener('click', () => {
+            tg.showAlert('Welcome to EthioSubCash!');
+        });
+    </script>
+</body>
+</html>
