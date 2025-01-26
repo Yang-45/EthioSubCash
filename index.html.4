@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EthioSubCash</title>
+    <style>
+        /* Black and White Theme */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background-color: black; /* Black background */
+            color: white; /* White text */
+            overflow: hidden; /* Hide overflow for star animation */
+            position: relative;
+        }
+        h1 {
+            color: white; /* White text */
+        }
+        .dashboard {
+            background: rgba(255, 255, 255, 0.1); /* Semi-transparent white */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1);
+            margin: 20px auto;
+            max-width: 400px;
+            position: relative;
+            z-index: 1;
+        }
+        .reward {
+            font-size: 24px;
+            margin: 20px 0;
+            color: white; /* White text */
+        }
+        .reward span {
+            color: white; /* White text */
+            font-weight: bold;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            background-color: white; /* White background */
+            color: black; /* Black text */
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin: 10px;
+        }
+        button:hover {
+            background-color: #e0e0e0; /* Light gray on hover */
+        }
+        .referral-link {
+            margin: 20px 0;
+            font-size: 16px;
+            color: white; /* White text */
+        }
+        .referral-link a {
+            color: white; /* White text */
+            text-decoration: underline;
+        }
+        .leaderboard {
+            margin-top: 30px;
+        }
+        .leaderboard h2 {
+            color: white; /* White text */
+        }
+        .leaderboard ol {
+            text-align: left;
+            margin: 0 auto;
+            max-width: 300px;
+            color: white; /* White text */
+        }
+
+        /* Starry Background Animation */
+        @keyframes moveStars {
+            from {
+                transform: translateY(0);
+            }
+            to {
+                transform: translateY(-100%);
+            }
+        }
+
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 200%; /* Double height for seamless animation */
+            background: transparent;
+            z-index: 0;
+        }
+
+        .stars::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(white 10%, transparent 10%),
+                        radial-gradient(white 10%, transparent 10%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            animation: moveStars 50s linear infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- Starry Background -->
+    <div class="stars"></div>
+
+    <!-- Mini App Content -->
+    <h1>Welcome to EthioSubCash!</h1>
+    <div class="dashboard">
+        <div class="reward">Your current rewards: <span id="rewardAmount">0</span> ETB</div>
+        <button id="claimButton">Claim Rewards</button>
+        <div class="referral-link">
+            Your referral link: <a id="referralLink" href="#">Copy Link</a>
+        </div>
+        <button id="withdrawButton">Withdraw ETB</button>
+    </div>
+    <div class="leaderboard">
+        <h2>Leaderboard</h2>
+        <ol id="leaderboardList">
+            <li>Loading...</li>
+        </ol>
+    </div>
+
+    <script>
+        // Initialize Telegram Web App API
+        const tg = window.Telegram.WebApp;
+
+        // Expand the Mini App to full screen
+        tg.expand();
+
+        // Access user data
+        const user = tg.initDataUnsafe.user;
+        if (user) {
+            document.body.innerHTML += `<p>Hello, ${user.first_name}!</p>`;
+        }
+
+        // Reward system
+        let rewards = 0; // Start with 0 rewards
+        const rewardAmount = document.getElementById('rewardAmount');
+        const claimButton = document.getElementById('claimButton');
+        const referralLink = document.getElementById('referralLink');
+        const leaderboardList = document.getElementById('leaderboardList');
+
+        // Generate referral link
+        const referralCode = `_tgr_q1eVt3ExNzNk`; // Unique referral code
+        const referralUrl = `https://t.me/Acceptstarsbot?start=${referralCode}`;
+        referralLink.href = referralUrl;
+        referralLink.onclick = () => {
+            navigator.clipboard.writeText(referralUrl);
+            tg.showAlert('Referral link copied to clipboard!');
+            addReward(2); // Reward 2 ETB for sharing referral link
+        };
+
+        // Function to add rewards
+        function addReward(amount) {
+            rewards += amount;
+            rewardAmount.textContent = rewards;
+        }
+
+        // Handle claim button click
+        claimButton.addEventListener('click', () => {
+            addReward(2); // Reward 2 ETB for claiming rewards
+            tg.showAlert(`You claimed 2 ETB! Total rewards: ${rewards} ETB.`);
+        });
+
+        // Handle withdraw button click
+        const withdrawButton = document.getElementById('withdrawButton');
+        withdrawButton.addEventListener('click', () => {
+            if (rewards < 20) { // Minimum withdrawal is 20 ETB
+                tg.showAlert('You need at least 20 ETB to withdraw.');
+            } else {
+                tg.showInvoice('invoice_link', (status) => {
+                    if (status === 'paid') {
+                        rewards -= 20; // Deduct 20 ETB
+                        rewardAmount.textContent = rewards;
+                        tg.showAlert('Withdrawal successful! 20 ETB has been sent to your account.');
+                    }
+                });
+            }
+        });
+
+        // Leaderboard data (example)
+        const leaderboardData = [
+            { name: 'User1', rewards: 500 },
+            { name: 'User2', rewards: 400 },
+            { name: 'User3', rewards: 300 },
+        ];
+
+        // Display leaderboard
+        leaderboardList.innerHTML = leaderboardData
+            .map((user, index) => `<li>${index + 1}. ${user.name} - ${user.rewards} ETB</li>`)
+            .join('');
+    </script>
+</body>
+</html>
