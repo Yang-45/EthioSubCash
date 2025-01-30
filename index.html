@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Make Birr</title>
+  <script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0d1117;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    .container {
+      text-align: center;
+      padding: 20px;
+    }
+    button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #1e7e34;
+    }
+    input {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    h1, h2, p {
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Welcome to Make Birr</h1>
+    <p>Earn rewards by completing tasks, inviting friends, and connecting your wallet.</p>
+    <div id="welcome-section">
+      <button onclick="startProcess()">Get Started</button>
+    </div>
+
+    <div id="phone-section" style="display: none;">
+      <h2>Step 1: Enter Your Telebirr Phone Number</h2>
+      <input type="text" id="phone-number" placeholder="Enter your Telebirr number" />
+      <button onclick="submitPhone()">Submit</button>
+      <p id="error-message" style="color: red; display: none;">Invalid phone number. Please check the format.</p>
+    </div>
+
+    <div id="wallet-section" style="display: none;">
+      <h2>Step 2: Connect Your Wallet</h2>
+      <button onclick="connectWallet()">Connect Wallet</button>
+    </div>
+
+    <div id="task-section" style="display: none;">
+      <h2>Welcome, <span id="wallet-address"></span></h2>
+      <p>Points: <span id="points">0</span></p>
+      <div id="tasks">
+        <!-- Tasks will be dynamically inserted here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let walletAddress = null;
+    let points = 0;
+
+    const tasks = [
+      { id: 1, title: "Complete Your Profile", points: 50, completed: false },
+      { id: 2, title: "Invite a Friend", points: 100, completed: false },
+      { id: 3, title: "Join Our Telegram Channel", points: 30, completed: false },
+    ];
+
+    // Phone number validation function
+    function validatePhoneNumber(phoneNumber) {
+      // Regex for Ethiopian phone numbers (Telebirr)
+      const phoneRegex = /^(?:\+251|251|0)?(9\d{8})$/;
+      return phoneRegex.test(phoneNumber);
+    }
+
+    function startProcess() {
+      document.getElementById("welcome-section").style.display = "none";
+      document.getElementById("phone-section").style.display = "block";
+    }
+
+    function submitPhone() {
+      const phoneNumber = document.getElementById("phone-number").value.trim();
+      const errorMessage = document.getElementById("error-message");
+
+      // Validate phone number
+      if (!validatePhoneNumber(phoneNumber)) {
+        errorMessage.style.display = "block"; // Show error message
+        return;
+      }
+
+      errorMessage.style.display = "none"; // Hide error message if valid
+
+      // Call the backend to validate the phone number with Telebirr
+      fetch("/validate-phone", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ phone: phoneNumber }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.valid) {
+            alert("Phone number validated successfully!");
+            document.getElementById("phone-section").style.display = "none";
+            document.getElementById("wallet-section").style.display = "block";
+          } else {
+            alert("Invalid Telebirr number. Please try again.");
+          }
+        })
+        .catch((err) => {
+          alert("Error validating phone number.");
+          console.error(err);
+        });
+    }
+
+    async function connectWallet() {
+      if (window.ethereum) {
+        const web3 = new Web3(window.ethereum);
+        try {
+          const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+          walletAddress = accounts[0];
+          document.getElementById("wallet-address").innerText = walletAddress;
+          document.getElementById("wallet-section").style.display = "none";
+          document.getElementById("task-section").style.display = "block";
+          loadTasks();
+        } catch (error) {
+          alert("Wallet connection failed.");
+          console.error(error);
+        }
+      } else {
+        alert("Please install MetaMask!");
+      }
+    }
+
+    function loadTasks() {
+      const taskDiv = document.getElementById("tasks");
+      taskDiv.innerHTML = "";
+      tasks.forEach((task) => {
+        const taskItem = document.createElement("div");
+        taskItem.innerHTML = `
+          <p>${task.title} - ${task.points} points</p>
+          <button onclick="completeTask(${task.id})" ${task.completed ? "disabled" : ""}>
+            ${task.completed ? "Completed" : "Complete Task"}
+          </button>
+        `;
+        taskDiv.appendChild(taskItem);
+      });
+    }
+
+    function completeTask(taskId) {
+      const task = tasks.find((t) => t.id === taskId);
+      if (task && !task.completed) {
+        task.completed = true;
+        points += task.points;
+        document.getElementById("points").innerText = points;
+        loadTasks();
+        alert(`Task "${task.title}" completed! You earned ${task.points} points.`);
+      }
+    }
+  </script>
+</body>
+</html>
